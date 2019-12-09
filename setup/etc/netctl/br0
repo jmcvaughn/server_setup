@@ -1,0 +1,4 @@
+Interface=br0
+Connection=openvswitch
+BindsToInterfaces=(eno1)
+IP=dhcp

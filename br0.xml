@@ -1,0 +1,114 @@
+<network>
+  <name>br0</name>
+  <forward mode='bridge'/>
+  <bridge name='br0'/>
+  <virtualport type='openvswitch'/>
+  <portgroup name='vmgateway-eth1'>
+    <vlan trunk='yes'>
+      <tag id='1' nativeMode='untagged'/>
+      <tag id='2'/>
+      <tag id='3'/>
+      <tag id='4'/>
+      <tag id='5'/>
+      <tag id='6'/>
+      <tag id='7'/>
+      <tag id='8'/>
+      <tag id='9'/>
+      <tag id='10'/>
+      <tag id='11'/>
+      <tag id='12'/>
+      <tag id='13'/>
+      <tag id='14'/>
+      <tag id='15'/>
+      <tag id='16'/>
+      <tag id='17'/>
+      <tag id='18'/>
+      <tag id='19'/>
+      <tag id='20'/>
+      <tag id='21'/>
+      <tag id='22'/>
+      <tag id='23'/>
+      <tag id='24'/>
+      <tag id='25'/>
+      <tag id='26'/>
+      <tag id='27'/>
+      <tag id='28'/>
+      <tag id='29'/>
+      <tag id='30'/>
+      <tag id='31'/>
+      <tag id='32'/>
+      <tag id='33'/>
+      <tag id='34'/>
+      <tag id='35'/>
+      <tag id='36'/>
+      <tag id='37'/>
+      <tag id='38'/>
+      <tag id='39'/>
+      <tag id='40'/>
+      <tag id='41'/>
+      <tag id='42'/>
+      <tag id='43'/>
+      <tag id='44'/>
+      <tag id='45'/>
+      <tag id='46'/>
+      <tag id='47'/>
+      <tag id='48'/>
+      <tag id='49'/>
+      <tag id='50'/>
+      <tag id='51'/>
+      <tag id='52'/>
+      <tag id='53'/>
+      <tag id='54'/>
+      <tag id='55'/>
+      <tag id='56'/>
+      <tag id='57'/>
+      <tag id='58'/>
+      <tag id='59'/>
+      <tag id='60'/>
+      <tag id='61'/>
+      <tag id='62'/>
+      <tag id='63'/>
+      <tag id='64'/>
+      <tag id='65'/>
+      <tag id='66'/>
+      <tag id='67'/>
+      <tag id='68'/>
+      <tag id='69'/>
+      <tag id='70'/>
+      <tag id='71'/>
+      <tag id='72'/>
+      <tag id='73'/>
+      <tag id='74'/>
+      <tag id='75'/>
+      <tag id='76'/>
+      <tag id='77'/>
+      <tag id='78'/>
+      <tag id='79'/>
+      <tag id='80'/>
+      <tag id='81'/>
+      <tag id='82'/>
+      <tag id='83'/>
+      <tag id='84'/>
+      <tag id='85'/>
+      <tag id='86'/>
+      <tag id='87'/>
+      <tag id='88'/>
+      <tag id='89'/>
+      <tag id='90'/>
+      <tag id='91'/>
+      <tag id='92'/>
+      <tag id='93'/>
+      <tag id='94'/>
+      <tag id='95'/>
+      <tag id='96'/>
+      <tag id='97'/>
+      <tag id='98'/>
+      <tag id='99'/>
+    </vlan>
+  </portgroup>
+  <portgroup name='default'>
+    <vlan>
+      <tag id='1' nativeMode='untagged'/>
+    </vlan>
+  </portgroup>
+</network>
