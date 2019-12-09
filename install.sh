@@ -186,12 +186,12 @@ arch-chroot /mnt mkinitcpio -P
 mkdir -p /mnt/esp/EFI/systemd/ /mnt/esp/loader/entries/
 cp /mnt/usr/lib/systemd/boot/efi/systemd-bootx64.efi /mnt/esp/EFI/systemd/
 ## Add loader
-cat << 'EOF' > /mnt/esp/loader/entries/zedenv-default.conf
+cat << EOF > /mnt/esp/loader/entries/zedenv-default.conf
 title    Arch Linux
 linux    /env/zedenv-default/vmlinuz-linux
 initrd   /env/zedenv-default/intel-ucode.img
 initrd   /env/zedenv-default/initramfs-linux.img
-options  zfs_force=1 zfs=zproot/ROOT/default rw
+options  zfs_force=1 zfs=zproot/ROOT/default rw $kernel_opts
 EOF
 ## Add loader.conf
 echo 'default zedenv-default' > /mnt/esp/loader/loader.conf
