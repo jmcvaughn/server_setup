@@ -10,13 +10,12 @@ packages=(
   unarchiver unzip xz zip  # bzip2, gzip, tar already dependencies of base
 
   # Base utilities
-  archiso htop lm_sensors
+  archiso htop ipmitool lm_sensors
   ## Network diagnostic tools
   bind-tools mtr
 
   # Build utilities
-  base-devel
-  git
+  base-devel git
 
   # Disk health/SMART
   smartmontools
@@ -59,6 +58,9 @@ packages=(
   ovmf
   ### Open vSwitch
   openvswitch
+
+  # Other utilities
+  jq
 )
 
 
