@@ -74,7 +74,7 @@ cd "$(dirname "$0")"
 sudo zpool import -af
 
 # Install packages
-sudo pacman -Rsn --noconfirm vim
+sudo pacman -Rsn --noconfirm vim 2> /dev/null
 sudo pacman -Sy --noconfirm --needed "${packages[@]}"
 
 # Set shell to Zsh
