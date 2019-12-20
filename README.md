@@ -68,4 +68,6 @@ UUID=<UUID> /esp vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=i
 On completion, all installed partitions will be unmounted and the ZFS pool will be exported. For an unknown reason, `zproot/home` will not be mounted on first boot. Reboot the system immediately on first boot and the dataset will proceed to mount.
 
 ## System setup
+Prior to running `setup.sh`, migrate any data between pools as required.
+
 The setup script will import any other existing ZFS pools. For my system, important working data (Docker containers, virtual machines) is stored on an external ZFS pool, and will theoretically start back up when this script is first run. The script will copy the file structure in the `setup/` directory, install packages, perform any required configuration steps and enable and start required services.
