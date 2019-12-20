@@ -54,8 +54,6 @@ packages=(
   dmidecode  # Required to suppress errors
   ### To create virtual machines
   vagrant virt-install
-  ### UEFI firmware
-  ovmf
   ### Open vSwitch
   openvswitch
 
