@@ -9,6 +9,7 @@ disks=(  # Must be by-id. First is default for booting.
   /dev/disk/by-id/ata-Crucial_CT275MX300SSD1_16371415CD66
 )
 ashift=14
+swap=16  # Integer, in GiB. Defaults to 8 if null or undefined.
 users=(jamesvaughn)
 locales=(
   en_GB.UTF-8  # First is default
@@ -39,8 +40,11 @@ timedatectl set-ntp true
 
 # Partition disks
 for disk in ${disks[@]}; do
-  sgdisk -n 1:+1M:+1G -t 1:ef00 "$disk"  # ESP
-  sgdisk -n 2:0:0 -t 2:8300 "$disk"  # zproot
+  # 1 = ESP, 2 = swap, 3 = zproot
+  sgdisk \
+    -n 1:+1M:+1G -t 1:ef00 "$disk" \
+    -n 2:0:+"${swap:-8}"G -t 2:8200 "$disk" \
+    -n 3:0:0 -t 3:8300 "$disk"
 done
 sleep 1  # Allow udev to create the device files
 
@@ -56,7 +60,7 @@ zpool create zproot -fo ashift="$ashift" \
   -O relatime=on \
   -O xattr=sa \
   -R /mnt \
-  $vdev_type "${disks[@]/%/-part2}"  # Append "-part2" to each disk
+  $vdev_type "${disks[@]/%/-part3}"  # Append "-part3" to each disk
 
 ## Set up zfs-mount-generator (ZFS-systemd integration)
 ### Generated in the live environment, then copied to the chroot environment
@@ -124,6 +128,17 @@ genfstab -U /mnt/ | awk '/[[:space:]]\/esp[[:space:]]+vfat/ {
   print
   print "/esp/env/zedenv-default /boot none "$4",bind "$5" "$6
 }' >> /mnt/etc/fstab
+
+# Create and set up swap device, add to fstab
+if [ "${#disks[@]}" -eq 1 ]; then  # Single
+  mkswap "${disks[0]/%/-part2}"
+  echo "UUID=$(lsblk "${disks[0]/%/-part2}" --noheadings --output uuid) none swap defaults 0 0" >> /mnt/etc/fstab
+else
+  mdadm --create /dev/md1 --level 1 --raid-devices "${#disks[@]}" "${disks[@]/%/-part2}" --run
+  mkswap /dev/md1
+  # Not using UUID as it is somehow changed once booted into the installation
+  echo "/dev/md1 none swap defaults 0 0" >> /mnt/etc/fstab
+fi
 
 # Set timezone and synchronise hardware clock
 arch-chroot /mnt ln -s /usr/share/zoneinfo/"$timezone" /etc/localtime
