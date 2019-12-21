@@ -38,8 +38,7 @@ packages=(
 
   # Shell utilities
   tree tmux
-  ## Shells
-  bash-completion
+  ## Zsh
   zsh zsh-autosuggestions zsh-completions zsh-history-substring-search
   zsh-syntax-highlighting
 

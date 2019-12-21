@@ -118,9 +118,9 @@ pacman-key --lsign-key 403BD972F75D9D76
 
 # Install essential packages (and some realistic extras)
 pacstrap /mnt/ \
-  base "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk linux \
-  linux-firmware linux-headers less man-db man-pages openssh reflector sudo \
-  tmux vim zfs-dkms $(test "${#disks[@]}" -gt 1 && printf 'mdadm')
+  base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk \
+  linux linux-firmware linux-headers less man-db man-pages openssh reflector \
+  sudo tmux vim zfs-dkms $(test "${#disks[@]}" -gt 1 && printf 'mdadm')
 
 # Generate fstab for ESP and boot partitions
 genfstab -U /mnt/ | awk '/[[:space:]]\/esp[[:space:]]+vfat/ {
