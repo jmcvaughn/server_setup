@@ -175,7 +175,7 @@ sed -i 's/^#Compress=yes$/Compress=no/' /mnt/etc/systemd/journald.conf
 
 # Set up users
 echo '%wheel ALL=(ALL) ALL' > /mnt/etc/sudoers.d/wheel
-chmod 0660 /mnt/etc/sudoers.d/wheel
+chmod 0440 /mnt/etc/sudoers.d/wheel
 echo "Setting up user root..."
 arch-chroot /mnt passwd
 for user in ${users[@]}; do
