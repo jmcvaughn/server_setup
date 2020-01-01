@@ -10,7 +10,7 @@ packages=(
   unarchiver unzip xz zip  # bzip2, gzip, tar already dependencies of base
 
   # Base utilities
-  archiso htop ipmitool lm_sensors lsof
+  archiso htop ipmitool lsof
   ## Network diagnostic tools
   bind-tools mtr
 
