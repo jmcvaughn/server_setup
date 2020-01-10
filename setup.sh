@@ -19,7 +19,6 @@ packages=(
 
   # Disk health/SMART
   smartmontools
-  postfix  # To send messages
 
   # Download utilities
   aria2 curl
@@ -29,6 +28,9 @@ packages=(
 
   # Filesystem/partitioning utilities
   cdrtools exfat-utils
+
+  # Mail
+  postfix s-nail
 
   # Networking
   netctl
@@ -85,6 +87,10 @@ systemctl --quiet is-enabled pkgfile-update.timer || sudo pkgfile --update
 
 # Copy configuration file tree
 sudo cp -r --dereference setup/. /
+
+# Create mail spool file
+touch /var/spool/mail/jamesvaughn
+chmod 0600 /var/spool/mail/jamesvaughn
 
 # Configure Postfix
 sudo postalias /etc/postfix/aliases
