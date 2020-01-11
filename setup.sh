@@ -8,6 +8,7 @@ hostname='jvaughnserver'
 packages=(
   # Archive utilities
   unarchiver unzip xz zip  # bzip2, gzip, tar already dependencies of base
+  cpio  # Required by virt-install for --initrd-inject
 
   # Base utilities
   archiso htop ipmitool lsof
