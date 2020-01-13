@@ -13,7 +13,7 @@ packages=(
   # Base utilities
   archiso htop ipmitool lsof
   ## Network diagnostic tools
-  bind-tools mtr
+  bind-tools mtr tcpdump
 
   # Build utilities
   base-devel git
