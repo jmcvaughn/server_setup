@@ -75,7 +75,7 @@ sudo zpool import -af
 
 # Install packages
 sudo pacman -Rsn --noconfirm vim 2> /dev/null
-sudo pacman -Sy --noconfirm --needed "${packages[@]}"
+sudo pacman -Sy --noconfirm --needed "${packages[@]}" --overwrite '/etc/netctl/examples/*'
 
 # Set shell to Zsh
 test ! "$(awk -F ':' "/$USER/ {print \$7}" /etc/passwd)" = '/usr/bin/zsh' && chsh -s /usr/bin/zsh
@@ -101,8 +101,10 @@ sudo systemctl disable --now dhcpcd@eno1.service
 sudo systemctl enable --now ovs-vswitchd.service
 sudo ovs-vsctl add-br br0
 sudo ovs-vsctl add-port br0 eno1
-sudo netctl enable br0
-sudo netctl start br0
+for profile in $(netctl list | grep br0 | cut -c 3-); do
+  sudo netctl enable "$profile"
+  sudo netctl start "$profile"
+done
 
 # Configure virtualisation
 sudo usermod -aG libvirt jamesvaughn
@@ -114,7 +116,8 @@ if ! sudo virsh net-list --all | grep -q br0; then
 fi
 
 # Enable and start other miscellaneous services
-sudo systemctl enable --now {docker,nfs-server,postfix,smartd,zfs-share}.service pkgfile-update.timer
+## iptables: using default configuration, for forwarding
+sudo systemctl enable --now {dnsmasq,docker,iptables,nfs-server,postfix,smartd,zfs-share}.service pkgfile-update.timer
 
 # Make key directories
 mkdir "$HOME"/{.config,git}/ 2> /dev/null
