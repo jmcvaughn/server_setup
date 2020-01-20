@@ -1,4 +1,5 @@
 Interface=br0
 Connection=openvswitch
 BindsToInterfaces=(eno1)
+ForceConnect=yes
 IP=dhcp
