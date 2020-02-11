@@ -55,7 +55,7 @@ packages=(
   libvirt bridge-utils dnsmasq ebtables openbsd-netcat qemu-headless
   dmidecode  # Required to suppress errors
   ### To create virtual machines
-  vagrant virt-install
+  virt-install
   ### Open vSwitch
   openvswitch
 
