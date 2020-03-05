@@ -63,7 +63,7 @@ UUID=<UUID> /esp vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=i
 /esp/env/zedenv-default /boot none rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro,bind 0 2
 ```
 
-`systemd-boot` is used. This scheme is compatible with [`zedenv`](https://github.com/johnramsden/zedenv).
+systemd-boot is used. While this scheme is compatible with [zedenv](https://github.com/johnramsden/zedenv), ZFS currently doesn't allow the `bootfs` property to be set on pools that don't adhere to its feature restrictions for GRUB. This means that for now, zedenv cannot be used in this configuration. A pull request is open to remove these restrictions (https://github.com/openzfs/zfs/pull/8627); once merged, zedenv can be used.
 
 On completion, all installed partitions will be unmounted and the ZFS pool will be exported. For an unknown reason, `zproot/home` will not be mounted on first boot. Reboot the system immediately on first boot and the dataset will proceed to mount.
 
