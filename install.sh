@@ -5,15 +5,15 @@
 #-------------------------------------------------------------------------------
 
 disks=(  # Must be by-id. First is default for booting.
-  /dev/disk/by-id/ata-Crucial_CT275MX300SSD1_163313A6BB6A
-  /dev/disk/by-id/ata-Crucial_CT275MX300SSD1_16371415CD66
+	/dev/disk/by-id/ata-Crucial_CT275MX300SSD1_163313A6BB6A
+	/dev/disk/by-id/ata-Crucial_CT275MX300SSD1_16371415CD66
 )
 ashift=14
 swap=16  # Integer, in GiB. Defaults to 8 if null or undefined.
 users=(jamesvaughn)
 locales=(
-  en_GB.UTF-8  # First is default
-  en_US.UTF-8  # Do not remove, must always be included regardless of position
+	en_GB.UTF-8  # First is default
+	en_US.UTF-8  # Do not remove, must always be included regardless of position
 )
 timezone='Europe/London'
 keymap='uk'
@@ -31,8 +31,8 @@ cpu=$(echo "${cpu%(*}" | tr '[:upper:]' '[:lower:]')
 
 # Determine if running on UEFI system
 if [ ! -d /sys/firmware/efi/efivars ]; then
-  echo 'Must be run on a UEFI system, exiting.'
-  exit 1
+	echo 'Must be run on a UEFI system, exiting.'
+	exit 1
 fi
 
 # Synchronise time
@@ -40,11 +40,11 @@ timedatectl set-ntp true
 
 # Partition disks
 for disk in ${disks[@]}; do
-  # 1 = ESP, 2 = swap, 3 = zproot
-  sgdisk \
-    -n 1:+1M:+1G -t 1:ef00 "$disk" \
-    -n 2:0:+"${swap:-8}"G -t 2:8200 "$disk" \
-    -n 3:0:0 -t 3:8300 "$disk"
+	# 1 = ESP, 2 = swap, 3 = zproot
+	sgdisk \
+		-n 1:+1M:+1G -t 1:ef00 "$disk" \
+		-n 2:0:+"${swap:-8}"G -t 2:8200 "$disk" \
+		-n 3:0:0 -t 3:8300 "$disk"
 done
 sleep 1  # Allow udev to create the device files
 
@@ -52,15 +52,15 @@ sleep 1  # Allow udev to create the device files
 ## Create root zpool
 test "${#disks[@]}" -gt 1 && vdev_type='mirror'
 zpool create zproot -fo ashift="$ashift" \
-  -O canmount=off \
-  -O compression=lz4 \
-  -O dnodesize=auto \
-  -O mountpoint=none \
-  -O normalization=formD \
-  -O relatime=on \
-  -O xattr=sa \
-  -R /mnt \
-  $vdev_type "${disks[@]/%/-part3}"  # Append "-part3" to each disk
+	-O canmount=off \
+	-O compression=lz4 \
+	-O dnodesize=auto \
+	-O mountpoint=none \
+	-O normalization=formD \
+	-O relatime=on \
+	-O xattr=sa \
+	-R /mnt \
+	$vdev_type "${disks[@]/%/-part3}"  # Append "-part3" to each disk
 
 ## Set up zfs-mount-generator (ZFS-systemd integration)
 ### Generated in the live environment, then copied to the chroot environment
@@ -79,7 +79,7 @@ zfs create -o mountpoint=/home zproot/home
 zfs create -o mountpoint=/root zproot/home/root
 chmod 0750 /mnt/root/
 for user in ${users[@]}; do
-  zfs create zproot/home/"$user"
+	zfs create zproot/home/"$user"
 done
 ### /usr/
 zfs create -o canmount=off -o mountpoint=/usr zproot/usr
@@ -97,13 +97,13 @@ zfs create -o acltype=posixacl zproot/var/log/journal
 # Create and mount ESP (mirrored)
 mkdir /mnt/esp/
 if [ "${#disks[@]}" -eq 1 ]; then  # Single
-  mkfs.fat -F 32 -s 1 -S 4096 "${disks[0]/%/-part1}"
-  mount "${disks[0]/%/-part1}" /mnt/esp/
+	mkfs.fat -F 32 -s 1 -S 4096 "${disks[0]/%/-part1}"
+	mount "${disks[0]/%/-part1}" /mnt/esp/
 else  # Mirror
-  mdadm --create /dev/md0 --level 1 --raid-devices "${#disks[@]}" --metadata 1.0 "${disks[@]/%/-part1}" --run
-  sleep 1  # Allow udev to create the device files
-  mkfs.fat -F 32 -s 1 -S 4096 /dev/md0
-  mount /dev/md0 /mnt/esp/
+	mdadm --create /dev/md0 --level 1 --raid-devices "${#disks[@]}" --metadata 1.0 "${disks[@]/%/-part1}" --run
+	sleep 1  # Allow udev to create the device files
+	mkfs.fat -F 32 -s 1 -S 4096 /dev/md0
+	mount /dev/md0 /mnt/esp/
 fi
 mkdir -p /mnt/esp/env/zedenv-default/ /mnt/boot/
 mount --bind /mnt/esp/env/zedenv-default/ /mnt/boot/
@@ -118,27 +118,27 @@ pacman-key --lsign-key 403BD972F75D9D76
 
 # Install essential packages (and some realistic extras)
 pacstrap /mnt/ \
-  base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk \
-  linux-lts linux-firmware linux-lts-headers less man-db man-pages openssh \
-  reflector sudo tmux vim zfs-dkms \
-  $(test "${#disks[@]}" -gt 1 && printf 'mdadm')
+	base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk \
+	linux-lts linux-firmware linux-lts-headers less man-db man-pages openssh \
+	reflector sudo tmux vim zfs-dkms \
+	$(test "${#disks[@]}" -gt 1 && printf 'mdadm')
 
 # Generate fstab for ESP and boot partitions
 genfstab -U /mnt/ | awk '/[[:space:]]\/esp[[:space:]]+vfat/ {
-  gsub("[[:space:]]+", " ")
-  print
-  print "/esp/env/zedenv-default /boot none "$4",bind "$5" "$6
+	gsub("[[:space:]]+", " ")
+	print
+	print "/esp/env/zedenv-default /boot none "$4",bind "$5" "$6
 }' >> /mnt/etc/fstab
 
 # Create and set up swap device, add to fstab
 if [ "${#disks[@]}" -eq 1 ]; then  # Single
-  mkswap "${disks[0]/%/-part2}"
-  echo "UUID=$(lsblk "${disks[0]/%/-part2}" --noheadings --output uuid) none swap defaults 0 0" >> /mnt/etc/fstab
+	mkswap "${disks[0]/%/-part2}"
+	echo "UUID=$(lsblk "${disks[0]/%/-part2}" --noheadings --output uuid) none swap defaults 0 0" >> /mnt/etc/fstab
 else
-  mdadm --create /dev/md1 --level 1 --raid-devices "${#disks[@]}" "${disks[@]/%/-part2}" --run
-  mkswap /dev/md1
-  # Not using UUID as it is somehow changed once booted into the installation
-  echo "/dev/md1 none swap defaults 0 0" >> /mnt/etc/fstab
+	mdadm --create /dev/md1 --level 1 --raid-devices "${#disks[@]}" "${disks[@]/%/-part2}" --run
+	mkswap /dev/md1
+	# Not using UUID as it is somehow changed once booted into the installation
+	echo "/dev/md1 none swap defaults 0 0" >> /mnt/etc/fstab
 fi
 
 # Set timezone and synchronise hardware clock
@@ -147,7 +147,7 @@ arch-chroot /mnt hwclock --systohc
 
 # Generate/configure locales and configure keymap
 for locale in ${locales[@]}; do
-  sed -i "s/^#$locale/$locale/" /mnt/etc/locale.gen
+	sed -i "s/^#$locale/$locale/" /mnt/etc/locale.gen
 done
 arch-chroot /mnt locale-gen
 echo "LANG=${locales[0]}" > /mnt/etc/locale.conf
@@ -180,14 +180,14 @@ chmod 0440 /mnt/etc/sudoers.d/wheel
 echo "Setting up user root..."
 arch-chroot /mnt passwd
 for user in ${users[@]}; do
-  echo "Setting up user $user..."
-  arch-chroot /mnt useradd -G wheel "$user"
-  shopt -s dotglob
-  cp /mnt/etc/skel/* /mnt/home/"$user"/
-  shopt -u dotglob
-  arch-chroot /mnt chown -R "$user:$user" /home/"$user"/
-  arch-chroot /mnt chmod 0700 /home/"$user"/
-  arch-chroot /mnt passwd "$user"
+	echo "Setting up user $user..."
+	arch-chroot /mnt useradd -G wheel "$user"
+	shopt -s dotglob
+	cp /mnt/etc/skel/* /mnt/home/"$user"/
+	shopt -u dotglob
+	arch-chroot /mnt chown -R "$user:$user" /home/"$user"/
+	arch-chroot /mnt chmod 0700 /home/"$user"/
+	arch-chroot /mnt passwd "$user"
 done
 
 # Update mdadm configuration file
@@ -242,9 +242,9 @@ zpool export zproot
 
 # Add boot entries
 for ((disk="${#disks[@]}"; disk>0; disk--)); do
-  efibootmgr --create \
-    --disk "${disks[$((disk-1))]}" \
-    --part 1 \
-    --label "systemd-boot (SSD $disk)" \
-    --loader '\EFI\systemd\systemd-bootx64.efi'
+	efibootmgr --create \
+		--disk "${disks[$((disk-1))]}" \
+		--part 1 \
+		--label "systemd-boot (SSD $disk)" \
+		--loader '\EFI\systemd\systemd-bootx64.efi'
 done
