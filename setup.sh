@@ -73,6 +73,9 @@ cd "$(dirname "$0")"
 # Import zpools
 sudo zpool import -af
 
+# Copy /etc/pacman.conf
+sudo cp {setup,}/etc/pacman.conf
+
 # Install packages
 sudo pacman -Rsn --noconfirm vim 2> /dev/null
 sudo pacman -Sy --noconfirm --needed "${packages[@]}" --overwrite '/etc/netctl/examples/*'

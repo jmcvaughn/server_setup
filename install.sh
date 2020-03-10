@@ -119,8 +119,9 @@ pacman-key --lsign-key 403BD972F75D9D76
 # Install essential packages (and some realistic extras)
 pacstrap /mnt/ \
   base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk \
-  linux linux-firmware linux-headers less man-db man-pages openssh reflector \
-  sudo tmux vim zfs-dkms $(test "${#disks[@]}" -gt 1 && printf 'mdadm')
+  linux-lts linux-firmware linux-lts-headers less man-db man-pages openssh \
+  reflector sudo tmux vim zfs-dkms \
+  $(test "${#disks[@]}" -gt 1 && printf 'mdadm')
 
 # Generate fstab for ESP and boot partitions
 genfstab -U /mnt/ | awk '/[[:space:]]\/esp[[:space:]]+vfat/ {
@@ -203,9 +204,9 @@ cp /mnt/usr/lib/systemd/boot/efi/systemd-bootx64.efi /mnt/esp/EFI/systemd/
 ## Add loader
 cat << EOF > /mnt/esp/loader/entries/zedenv-default.conf
 title    Arch Linux
-linux    /env/zedenv-default/vmlinuz-linux
+linux    /env/zedenv-default/vmlinuz-linux-lts
 initrd   /env/zedenv-default/intel-ucode.img
-initrd   /env/zedenv-default/initramfs-linux.img
+initrd   /env/zedenv-default/initramfs-linux-lts.img
 options  zfs_force=1 zfs=zproot/ROOT/default rw $kernel_opts
 EOF
 ## Add loader.conf
@@ -223,6 +224,17 @@ Description = Updating systemd-boot
 When = PostTransaction
 Exec = /usr/bin/cp /usr/lib/systemd/boot/efi/systemd-bootx64.efi /esp/EFI/systemd/
 EOF
+
+# ZFS repository
+## Add archzfs repository
+cat << 'EOF' >> /mnt/etc/pacman.conf
+
+[archzfs]
+Server = http://archzfs.com/$repo/x86_64
+EOF
+## Add repository keys
+arch-chroot /mnt pacman-key --recv-keys 403BD972F75D9D76
+arch-chroot /mnt pacman-key --lsign-key 403BD972F75D9D76
 
 # Unmount filesystems
 umount /mnt/{boot,esp}/
