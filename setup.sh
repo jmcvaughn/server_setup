@@ -60,7 +60,7 @@ packages=(
 	openvswitch
 
 	# Other utilities
-	jq
+	jq znc
 )
 
 
@@ -120,7 +120,7 @@ fi
 
 # Enable and start other miscellaneous services
 ## iptables: using default configuration, for forwarding
-sudo systemctl enable --now {dnsmasq,docker,iptables,nfs-server,postfix,smartd,zfs-share}.service pkgfile-update.timer
+sudo systemctl enable --now {dnsmasq,docker,iptables,nfs-server,postfix,smartd,zfs-share,znc}.service pkgfile-update.timer
 
 # Make key directories
 mkdir "$HOME"/{.config,git}/ 2> /dev/null
