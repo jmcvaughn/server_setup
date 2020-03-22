@@ -102,8 +102,8 @@ sudo postalias /etc/postfix/aliases
 # Configure Open vSwitch
 sudo systemctl disable --now dhcpcd@eno1.service
 sudo systemctl enable --now ovs-vswitchd.service
-sudo ovs-vsctl add-br br0
-sudo ovs-vsctl add-port br0 eno1
+sudo ovs-vsctl --may-exist add-br br0
+sudo ovs-vsctl --may-exist add-port br0 eno1
 for profile in $(netctl list | grep br0 | cut -c 3-); do
 	sudo netctl enable "$profile"
 	sudo netctl start "$profile"
