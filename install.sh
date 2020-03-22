@@ -18,7 +18,7 @@ locales=(
 timezone='Europe/London'
 keymap='uk'
 mirror_country='GB'
-kernel_opts='console=ttyS0'
+kernel_opts='console=ttyS0 apparmor=1 security=apparmor'
 
 
 #-------------------------------------------------------------------------------
@@ -118,9 +118,9 @@ pacman-key --lsign-key 403BD972F75D9D76
 
 # Install essential packages (and some realistic extras)
 pacstrap /mnt/ \
-	base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr gptfdisk \
-	linux-lts linux-firmware linux-lts-headers less man-db man-pages openssh \
-	reflector sudo tmux vim zfs-dkms \
+	apparmor base bash-completion "$cpu"-ucode dhcpcd dosfstools efibootmgr \
+	gptfdisk linux-lts linux-firmware linux-lts-headers less man-db man-pages \
+	openssh reflector sudo tmux vim zfs-dkms \
 	$(test "${#disks[@]}" -gt 1 && printf 'mdadm')
 
 # Generate fstab for ESP and boot partitions
@@ -168,8 +168,8 @@ arch-chroot /mnt ln -s /usr/lib/zfs-*/zfs/zed.d/history_event-zfs-list-cacher.sh
 arch-chroot /mnt zpool set cachefile=/etc/zfs/zpool.cache zproot
 arch-chroot /mnt systemctl enable {zfs,zfs-import}.target {zfs-import-cache,zfs-mount,zfs-zed}.service
 
-# Enable dhcpcd and SSH
-arch-chroot /mnt systemctl enable dhcpcd@"$(ip r | awk '/default/ {print $5}')".service sshd.service
+# Enable AppArmor, dhcpcd and SSH
+arch-chroot /mnt systemctl enable {apparmor,dhcpcd@"$(ip r | awk '/default/ {print $5}')",sshd}.service
 
 # Disable systemd journal compression
 sed -i 's/^#Compress=yes$/Compress=no/' /mnt/etc/systemd/journald.conf

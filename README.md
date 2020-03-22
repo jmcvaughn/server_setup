@@ -71,3 +71,23 @@ On completion, all installed partitions will be unmounted and the ZFS pool will 
 Prior to running `setup.sh`, migrate any data between pools as required.
 
 The setup script will import any other existing ZFS pools. For my system, important working data (Docker containers, virtual machines) is stored on an external ZFS pool, and will theoretically start back up when this script is first run. The script will copy the file structure in the `setup/` directory, install packages, perform any required configuration steps and enable and start required services.
+
+## OpenStack script
+All virtualisation requirements are now met by OpenStack on LXD. `openstack.sh` performs the work up to and including installing OpenStack, but leaves the configuration of OpenStack to the user.
+
+Prior to running `openstack.sh`:
+- [Install Snap from the AUR](https://aur.archlinux.org/packages/snapd/). As automating the installation of AUR packages is a potential security risk, this step is not automated.
+- Add the lxd system group and add the existing user to it, then log back in for the new group membership to take effect: `sudo groupadd --system lxd && sudo usermod -aG lxd $USER`
+
+`openstack.sh` will:
+- Enable and (re)start the required Snap and AppArmor services
+- Install the LXD and Juju snaps
+- Initialise LXD with a ZFS backing store
+- Bootstrap a Juju controller under the name "HOSTNAME-lxd"
+- Configure LXC networking and profiles for Juju and OpenStack on LXD
+- Add some sysctl configuration for OpenStack on LXD
+- Create a Python venv at ~/venv/openstackclient/
+- Clone the OpenStack on LXD repository to ~/git/openstack-on-lxd/
+- Install OpenStack on LXD
+
+After script completion OpenStack will continue to install; this can be monitored with `watch juju status`. Observe for any [actions](https://jaas.ai/docs/working-with-actions) that need to be run, then complete the setup of OpenStack from the [Using the Cloud section of the OpenStack on LXD documentation](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html#deploy). Activate the openstackclient virtual environment to access the OpenStack client.
