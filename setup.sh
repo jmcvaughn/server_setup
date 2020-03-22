@@ -50,7 +50,7 @@ packages=(
 	source-highlight  # For syntax highlighting in less
 
 	# Virtualisation/containerisation
-  docker docker-compose
+	docker docker-compose
 	## libvirt and its optional dependencies
 	libvirt bridge-utils dnsmasq ebtables openbsd-netcat qemu-headless
 	dmidecode  # Required to suppress errors
