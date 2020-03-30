@@ -89,4 +89,11 @@ $ sudo apt-get update && sudo apt-get -y install zfsutils-linux
 After running `setup.sh`, enable [Canonical Livepatch](https://ubuntu.com/livepatch).
 
 ## OpenStack script
-All virtualisation requirements are met by OpenStack on LXD. `openstack.sh` automates the tasks detailed in the [OpenStack on LXD installation guide](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html) up to and including "Deploy". After script completion, OpenStack will continue to install; progress can be monitored with `watch juju status`. Observe for any [actions](https://jaas.ai/docs/working-with-actions) that need to be run. After running these actions and completing the installation, complete the setup of OpenStack by following the [Using the Cloud](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html#using-the-cloud) section of the guide.
+All virtualisation requirements are met by OpenStack on LXD. `openstack.sh` automates the tasks detailed in the [OpenStack on LXD installation guide](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html) up to and including "Deploy". After script completion, OpenStack will continue to install; progress can be monitored with `watch juju status`. Observe for any [actions](https://jaas.ai/docs/working-with-actions) that need to be run.
+
+After running these actions and completing the installation, complete the setup of OpenStack by following the [Using the Cloud](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html#using-the-cloud) section of the guide. However, note that by following the guide, the *admin_domain* domain, *admin* project and *admin* user will be used exclusively. This is poor practice. Instead, it is strongly recommended to add images, the external network, flavors and security group rules "as admin" for global availability, and create new domains, projects and users for regular use.
+
+If taking this approach, remove the *admin* project's *provider-router* (created when running `neutron-ext-net-ksv3` as per the guide); routers will instead be created in user projects:
+```
+$ openstack router delete provider-router
+```
