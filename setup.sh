@@ -11,6 +11,10 @@ packages=(
 # Set timezone
 sudo timedatectl set-timezone Europe/London
 
+# Enable console output
+echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX console=ttyS0"' | sudo tee /etc/default/grub.d/console.cfg
+sudo update-grub
+
 # Install packages
 sudo apt-get update && sudo apt-get -y install ${packages[@]}
 sudo snap install canonical-livepatch
