@@ -9,8 +9,8 @@
 sudo snap install juju --classic
 
 sudo apt-get update && sudo apt-get -y install zfsutils-linux squid-deb-proxy \
-	bridge-utils python3-novaclient python3-keystoneclient python3-glanceclient \
-	python3-neutronclient python3-openstackclient
+	bridge-utils python3-keystoneclient python3-neutronclient \
+	python3-openstackclient python3-swiftclient
 
 git clone https://github.com/openstack-charmers/openstack-on-lxd "$HOME"/git/openstack-on-lxd/
 
