@@ -19,6 +19,14 @@ sudo update-grub
 sudo apt-get update && sudo apt-get -y install ${packages[@]}
 sudo snap install canonical-livepatch
 
+# OpenSSH server: Set 'PasswordAuthentication no' in
+# /etc/ssh/sshd_config.d/PasswordAuthentication.conf. The installer adds this to
+# /etc/ssh/sshd_config when importing keys, which is undesirable.
+sudo apt-get -y purge openssh-server
+sudo apt-get -y install openssh-server
+echo 'PasswordAuthentication no' | sudo tee /etc/ssh/sshd_config.d/PasswordAuthentication.conf
+sudo systemctl restart ssh.service
+
 # Set shell to Zsh
 if [ "$(awk -F ':' "/$USER/ { print \$7 }" /etc/passwd)" != '/bin/zsh' ]; then
 	chsh -s /bin/zsh
