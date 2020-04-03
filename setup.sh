@@ -1,7 +1,7 @@
 #!/bin/bash
 
 packages=(
-	aria2 certbot docker docker-compose ipmitool jq neovim smartmontools
+	aria2 certbot docker docker-compose ipmitool jq neovim nginx smartmontools
 	source-highlight tree zfsutils-linux znc zsh zsh-autosuggestions
 	zsh-syntax-highlighting
 	#exfat-utils genisoimage mailutils nfs-kernel-server unar zip zsh-completions
