@@ -2,9 +2,9 @@
 
 packages=(
 	aria2 certbot docker docker-compose ipmitool jq neovim nginx smartmontools
-	source-highlight tree zfsutils-linux znc zsh zsh-autosuggestions
+	source-highlight tree zfsutils-linux zip znc zsh zsh-autosuggestions
 	zsh-syntax-highlighting
-	#exfat-utils genisoimage mailutils nfs-kernel-server unar zip zsh-completions
+	#exfat-utils genisoimage mailutils nfs-kernel-server unar zsh-completions
 	#zsh-history-substring-search
 )
 
