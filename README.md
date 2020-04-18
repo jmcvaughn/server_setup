@@ -88,12 +88,61 @@ $ sudo apt-get update && sudo apt-get -y install zfsutils-linux
 
 After running `setup.sh`, enable [Canonical Livepatch](https://ubuntu.com/livepatch).
 
-## OpenStack script
-All virtualisation requirements are met by OpenStack on LXD. `openstack.sh` automates the tasks detailed in the [OpenStack on LXD installation guide](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html) up to and including "Deploy". After script completion, OpenStack will continue to install; progress can be monitored with `watch juju status`. Observe for any [actions](https://jaas.ai/docs/working-with-actions) that need to be run.
+## OpenStack
+All virtualisation requirements are met by OpenStack, running on LXD. `setup.sh` configures LXD and Juju as required; `openstack.sh` configures a new model and bridge, and deploys the bundle.
 
-After running these actions and completing the installation, complete the setup of OpenStack by following the [Using the Cloud](https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html#using-the-cloud) section of the guide. However, note that by following the guide, the *admin_domain* domain, *admin* project and *admin* user will be used exclusively. This is poor practice. Instead, it is strongly recommended to add images, the external network, flavors and security group rules "as admin" for global availability, and create new domains, projects and users for regular use.
+### Post-deployment setup
+The commands in this section are examples; modify as appropriate.
 
-If taking this approach, remove the *admin* project's *provider-router* (created when running `neutron-ext-net-ksv3` as per the guide); routers will instead be created in user projects:
+#### Obtain the admin OpenStack RC file
+Obtain the admin user's password:
 ```
-$ openstack router delete provider-router
+$ juju run --unit keystone/0 leader-get admin_passwd
 ```
+
+Obtain the OpenStack Dashboard IP address:
+```
+$ juju status | grep openstack-dashboard
+```
+
+Log in to the OpenStack Dashboard at http://<DASHBOARD_IP>/horizon/ using the "admin_domain" domain, the "admin" user and the password obtained above. Once logged in, download the OpenStack RC file from the top-right menu.
+
+#### Create provider network and subnet
+```
+$ openstack network create --share --external --provider-network-type flat --provider-physical-network physnet1 provider
+$ openstack subnet create --network provider --allocation-pool start=10.188.1.1,end=10.188.1.254 --dns-nameserver 10.188.0.1 --gateway 10.188.0.1 --subnet-range 10.188.0.0/16 provider-subnet
+```
+
+#### Create flavours
+```
+$ openstack flavor create --public --ram 512 --disk 1 --ephemeral 0 --vcpus 1 m1.tiny
+$ openstack flavor create --public --ram 1024 --disk 20 --ephemeral 40 --vcpus 1 m1.small
+$ openstack flavor create --public --ram 2048 --disk 40 --ephemeral 40 --vcpus 2 m1.medium
+$ openstack flavor create --public --ram 8192 --disk 40 --ephemeral 40 --vcpus 4 m1.large
+$ openstack flavor create --public --ram 16384 --disk 80 --ephemeral 40 --vcpus 8 m1.xlarge
+```
+
+#### Add images
+Download the required images and modify the following command as required:
+```
+$ openstack image create --disk-format qcow2 --protected --public --file FILENAME IMAGE_NAME
+```
+
+#### Set up users and domains
+Much like you wouldn't use the "root" user for day-to-day work on a personal machine, don't use the "admin" user and the "admin_domain" domain for your workloads.
+
+As from the command line the following tasks at minimum require changing domain/project contexts or using IDs, these tasks are most quickly performed in the OpenStack Dashboard.
+
+Log in to the OpenStack Dashboard as "admin" as detailed in [Obtain the admin OpenStack RC file](#obtain-the-admin-openstack-rc-file). Under the Identity tab, repeat the following tasks for each required domain:
+- Create a domain, then click "Set Domain Context" to manage it
+- Create users
+- Create projects
+- Set users as domain Admins/Members
+- Assign memberships and primary projects to users
+- Set project quotas
+
+As a user:
+- Import an SSH public key (per user)
+- Add ingress rules for ICMP and SSH to the default security group (per project)
+- Create a network and subnet, and a router to connect to the provider network (per project)
+- Download the OpenStack RC file

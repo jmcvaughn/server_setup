@@ -1,23 +1,8 @@
 #!/bin/bash
 
-# Based on https://docs.openstack.org/charm-guide/latest/openstack-on-lxd.html
+cd "$(dirname "$0")"
 
-#-------------------------------------------------------------------------------
-# Host setup
-#-------------------------------------------------------------------------------
-
-sudo snap install juju --classic
-
-sudo apt-get update && sudo apt-get -y install zfsutils-linux squid-deb-proxy \
-	bridge-utils python3-neutronclient python3-openstackclient python3-swiftclient
-
-git clone https://github.com/openstack-charmers/openstack-on-lxd "$HOME"/git/openstack-on-lxd/
-
-
-#-------------------------------------------------------------------------------
-# LXD
-#-------------------------------------------------------------------------------
-
+# Set and load sysctl parameters
 cat << 'EOF' | sudo tee /etc/sysctl.d/openstack_lxd.conf
 fs.inotify.max_queued_events=1048576
 fs.inotify.max_user_instances=1048576
@@ -27,37 +12,41 @@ vm.swappiness=1
 EOF
 sudo sysctl -p /etc/sysctl.d/openstack_lxd.conf
 
-# Use LXD 3.0 LTS
-sudo snap refresh lxd --channel=3.0/stable
+# Create network bridge
+lxc network create lxdbr188 bridge.mtu=9000 ipv4.address=10.188.0.1/16 ipv4.dhcp.ranges=10.188.0.2-10.188.0.254 ipv6.address=none
 
-sudo zfs create zpssd/lxd 2> /dev/null
-lxd init --auto --network-address 0.0.0.0 --network-port 8443 --storage-backend zfs --storage-pool zpssd/lxd
+# Create openstack model
+juju add-model --config apt-http-proxy=http://10.188.0.1:8000 --config default-series=bionic openstack
+juju switch openstack
 
-lxc profile device set default eth0 mtu 9000  # For OpenStack
+# Update LXD profile
+cat << 'EOF' | lxc profile edit juju-openstack
+config:
+  boot.autostart: True
+  security.nesting: True
+  security.privileged: True
+  linux.kernel_modules: ip_tables,ip6_tables,nbd,openvswitch
+devices:
+  eth0:
+    name: eth0
+    nictype: bridged
+    parent: lxdbr188
+    type: nic
+  eth1:
+    name: eth1
+    nictype: bridged
+    parent: lxdbr188
+    type: nic
+  kvm:
+    path: /dev/kvm
+    type: unix-char
+  mem:
+    path: /dev/mem
+    type: unix-char
+  root:
+    path: /
+    pool: default
+    type: disk
+EOF
 
-# Additional tweaks
-## Disable IPv6 as Juju doesn't support it
-lxc network set lxdbr0 ipv6.address none
-## Limit the DHCP range as LXD makes scattered assignments
-lxdbr0_ipv4=$(lxc network get lxdbr0 ipv4.address)
-lxc network set lxdbr0 ipv4.dhcp.ranges "${lxdbr0_ipv4%1/24}"2-"${lxdbr0_ipv4%1/24}"50
-
-
-#-------------------------------------------------------------------------------
-# Juju
-#-------------------------------------------------------------------------------
-
-# Bootstrap the Juju Controller
-## Uses name $HOSTNAME-lxd
-juju bootstrap --config default-series=bionic --config apt-http-proxy=http://${lxdbr0_ipv4%/24}:8000 --no-gui localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"-lxd
-
-# Juju Profile Update
-cat "$HOME"/git/openstack-on-lxd/lxd-profile.yaml | lxc profile edit juju-default
-
-
-#-------------------------------------------------------------------------------
-# OpenStack
-#-------------------------------------------------------------------------------
-
-# Deploy
-juju deploy "$HOME"/git/openstack-on-lxd/bundle-bionic-train.yaml
+juju deploy ./openstack.yaml
