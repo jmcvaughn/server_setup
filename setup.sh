@@ -9,7 +9,6 @@ packages=(
 	ipmitool
 	jq
 	neovim
-	nginx
 	python3-openstackclient
 	smartmontools
 	source-highlight
