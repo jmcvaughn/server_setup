@@ -58,7 +58,7 @@ lxd init --auto --network-address 0.0.0.0 --network-port 8443 --storage-backend 
 lxc network set lxdbr0 ipv6.address none
 
 # Bootstrap Juju controller
-juju bootstrap localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"-lxd
+juju bootstrap localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"
 
 sudo systemctl enable --now {docker,znc}.service
 
