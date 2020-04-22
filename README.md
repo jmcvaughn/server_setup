@@ -89,7 +89,9 @@ $ sudo apt-get update && sudo apt-get -y install zfsutils-linux
 After running `setup.sh`, enable [Canonical Livepatch](https://ubuntu.com/livepatch).
 
 ## OpenStack
-All virtualisation requirements are met by OpenStack, running on LXD. `setup.sh` configures LXD and Juju as required; `openstack.sh` configures a new model and bridge, and deploys the bundle.
+All virtualisation requirements are met by OpenStack, running on LXD. `setup.sh` configures LXD and Juju as required, while `openstack.sh` adds the model, configures its profile, and deploys the openstack.yaml bundle.
+
+Note that glance-simplestreams-sync is used to manage Ubuntu images; these do not need to be added manually.
 
 ### Post-deployment setup
 The commands in this section are examples; modify as appropriate.
@@ -122,12 +124,6 @@ $ openstack flavor create --public --ram 8192 --disk 40 --ephemeral 40 --vcpus 4
 $ openstack flavor create --public --ram 16384 --disk 80 --ephemeral 40 --vcpus 8 m1.xlarge
 ```
 
-#### Add images
-Download the required images and modify the following command as required:
-```
-$ openstack image create --disk-format qcow2 --protected --public --file FILENAME IMAGE_NAME
-```
-
 #### Set up users and domains
 Much like you wouldn't use the "root" user for day-to-day work on a personal machine, don't use the "admin" user and the "admin_domain" domain for your workloads.
 
@@ -146,3 +142,25 @@ As a user:
 - Add ingress rules for ICMP and SSH to the default security group (per project)
 - Create a network and subnet, and a router to connect to the provider network (per project)
 - Download the OpenStack RC file
+
+### Juju
+To use the OpenStack installation as a Juju cloud itself, the following is recommended:
+
+- Create a new "juju" project to your preferred domain
+- Create a "juju" user to the domain, defaulting to the "juju" project and being a Member of it
+- Set your own user as an Admin for the project
+- Create a network and subnet, and a router to connect to the provider network
+
+There is no need to modify security groups or rules.
+
+Then copy and modify `juju_template.yaml` as required, and create the new cloud and credential:
+```
+$ juju add-cloud --controller "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')" --client openstack /tmp/juju.yaml
+$ juju add-credential --controller "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')" --client -f /tmp/juju.yaml openstack
+```
+
+Finally, set the default region and model defaults:
+```
+$ juju default-region openstack RegionOne
+$ juju model-defaults openstack network=default use-floating-ip=true  # Replace with network created previously
+```

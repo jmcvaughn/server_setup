@@ -15,6 +15,12 @@ applications:
     options:
       openstack-origin: cloud:bionic-train
       worker-multiplier: 0.1
+  glance-simplestreams-sync:
+    charm: cs:glance-simplestreams-sync
+    num_units: 1
+    options:
+      use_swift: False
+      source: ppa:simplestreams-dev/trunk
   heat:
     charm: cs:heat
     num_units: 1
@@ -89,9 +95,12 @@ relations:
   - [ cinder:shared-db, mysql:shared-db ]
 
   - [ glance:amqp, rabbitmq-server:amqp ]
-  - [ glance:image-service, cinder:image-service ]
   - [ glance:identity-service, keystone:identity-service ]
+  - [ glance:image-service, cinder:image-service ]
   - [ glance:shared-db, mysql:shared-db ]
+
+  - [ glance-simplestreams-sync:amqp, rabbitmq-server:amqp ]
+  - [ glance-simplestreams-sync:identity-service, keystone:identity-service ]
 
   - [ heat:amqp, rabbitmq-server:amqp ]
   - [ heat:identity-service, keystone:identity-service ]
@@ -125,5 +134,5 @@ relations:
 
   - [ openstack-dashboard:identity-service, keystone:identity-service ]
 
-  - [ placement:shared-db, mysql:shared-db ]
   - [ placement:identity-service, keystone:identity-service ]
+  - [ placement:shared-db, mysql:shared-db ]

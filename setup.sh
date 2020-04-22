@@ -50,15 +50,37 @@ if [ "$(awk -F ':' "/$USER/ { print \$7 }" /etc/passwd)" != '/bin/zsh' ]; then
 	chsh -s /bin/zsh
 fi
 
+# Configure kernel and security limits for LXD
+## https://github.com/lxc/lxd/blob/master/doc/production-setup.md
+cat << 'EOF' | sudo tee /etc/security/limits.d/lxd.conf
+* soft nofile 1048576
+* hard nofile 1048576
+root soft nofile 1048576
+root hard nofile 1048576
+* soft memlock unlimited
+* hard memlock unlimited
+EOF
+cat << 'EOF' | sudo tee /etc/sysctl.d/lxd.conf
+fs.inotify.max_queued_events=1048576
+fs.inotify.max_user_instances=1048576
+fs.inotify.max_user_watches=1048576
+vm.max_map_count=262144
+kernel.dmesg_restrict=1
+net.core.bpf_jit_limit=3000000000
+kernel.keys.maxbytes=200000
+vm.swappiness=1
+EOF
+sudo sysctl -p /etc/sysctl.d/lxd.conf
+
 # Initialise LXD
-sudo zfs create zpssd/lxd 2> /dev/null
+sudo zfs create zpssd/lxd 2> /dev/null && sleep 5
 lxd init --auto --network-address 0.0.0.0 --network-port 8443 --storage-backend zfs --storage-pool zpssd/lxd
 
-# Disable IPv6 on lxdbr0 as Juju doesn't support it
-lxc network set lxdbr0 ipv6.address none
+# Configure network; Juju doesn't support IPv6
+lxc network set lxdbr0 ipv4.address=10.188.0.1/16 ipv4.dhcp.ranges=10.188.0.2-10.188.0.254 ipv6.address=none
 
 # Bootstrap Juju controller
-juju bootstrap localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"
+juju bootstrap --config apt-http-proxy=http://10.188.0.1:8000 localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"
 
 sudo systemctl enable --now {docker,znc}.service
 
