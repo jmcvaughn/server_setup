@@ -117,7 +117,6 @@ $ openstack subnet create --network provider --allocation-pool start=10.188.1.1,
 
 #### Create flavours
 ```
-$ openstack flavor create --public --ram 512 --disk 1 --vcpus 1 m1.tiny
 $ openstack flavor create --public --ram 1024 --disk 20 --vcpus 1 m1.small
 $ openstack flavor create --public --ram 2048 --disk 40 --vcpus 2 m1.medium
 $ openstack flavor create --public --ram 8192 --disk 40 --vcpus 4 m1.large
