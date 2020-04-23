@@ -135,7 +135,7 @@ Log in to the OpenStack Dashboard as "admin" as detailed in [Obtain the admin Op
 - Create projects
 - Set users as domain Admins/Members
 - Assign memberships and primary projects to users
-- Set project quotas
+- Set project quotas - remember that in addition to increasing instance quotas you will need to increase other quotas accordingly, e.g. network ports, security groups and rules, among others.
 
 As a user:
 - Import an SSH public key (per user)
