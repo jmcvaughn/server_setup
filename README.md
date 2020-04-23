@@ -147,7 +147,7 @@ As a user:
 To use the OpenStack installation as a Juju cloud itself, the following is recommended:
 
 - Create a new "juju" project to your preferred domain
-- Create a "juju" user to the domain, defaulting to the "juju" project and being a Member of it
+- Create a "juju" user to the domain (but not as an Admin or Member of the domain), defaulting to the "juju" project as a Member
 - Set your own user as an Admin for the project
 - Create a network and subnet, and a router to connect to the provider network
 
