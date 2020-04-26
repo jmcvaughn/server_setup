@@ -184,7 +184,9 @@ Set defaults for OpenStack models:
 ```
 $ juju model-defaults openstack network=juju-default use-floating-ip=true  # Replace with network created previously
 ```
-These can be overridden on a per-model basis. Note `network=juju-default`, the arbitrary network created in the [OpenStack setup](#openstack-setup) step. Floating IPs are required to SSH into instances.
+These can be overridden on a per-model basis. A couple of things to note:
+- `network=juju-default` does not refer to a specific network. As before, Juju can only use the primary project for the OpenStack user as per the credential currently in use, so "juju-default" is the name of a network that exists in this project.
+- Floating IPs are required to SSH into instances.
 
 ### Create a user account on the Juju controller and logging in
 Create your user and grant access to the OpenStack cloud:
