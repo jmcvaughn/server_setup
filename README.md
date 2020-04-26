@@ -91,7 +91,9 @@ After running `setup.sh`, enable [Canonical Livepatch](https://ubuntu.com/livepa
 ## OpenStack
 All virtualisation requirements are met by OpenStack, running on LXD. `setup.sh` configures LXD and Juju as required, while `openstack.sh` adds the model, configures its profile, and deploys the openstack.yaml bundle.
 
-Note that glance-simplestreams-sync is used to manage Ubuntu images; these do not need to be added manually.
+glance-simplestreams-sync is used to manage Ubuntu images; these do not need to be added manually.
+
+Note all of this is performed under Juju's "admin" user; see the [Add the OpenStack cloud as Juju](#optional-add-the-openstack-cloud-to-juju) section for recommended Juju usage.
 
 ### Post-deployment setup
 The commands in this section are examples; modify as appropriate.
@@ -117,10 +119,10 @@ $ openstack subnet create --network provider --allocation-pool start=10.188.1.1,
 
 #### Create flavours
 ```
-$ openstack flavor create --public --ram 1024 --disk 20 --vcpus 1 m1.small
-$ openstack flavor create --public --ram 2048 --disk 40 --vcpus 2 m1.medium
-$ openstack flavor create --public --ram 8192 --disk 40 --vcpus 4 m1.large
-$ openstack flavor create --public --ram 16384 --disk 80 --vcpus 8 m1.xlarge
+$ openstack flavor create --public --ram 2048 --disk 20 --vcpus 1 small
+$ openstack flavor create --public --ram 4096 --disk 40 --vcpus 2 medium
+$ openstack flavor create --public --ram 8192 --disk 40 --vcpus 4 large
+$ openstack flavor create --public --ram 16384 --disk 80 --vcpus 8 xlarge
 ```
 
 #### Set up users and domains
@@ -142,24 +144,92 @@ As a user:
 - Create a network and subnet, and a router to connect to the provider network (per project)
 - Download the OpenStack RC file
 
-### Juju
-To use the OpenStack installation as a Juju cloud itself, the following is recommended:
+## Juju
+`openstack.sh` deploys OpenStack to the local LXD cloud using Juju, so it may seem strange to place this section after the [OpenStack](#openstack) section. There are two reasons for doing this:
 
-- Create a new "juju" project to your preferred domain
-- Create a "juju" user to the domain (but not as an Admin or Member of the domain), defaulting to the "juju" project as a Member
-- Set your own user as an Admin for the project
-- Create a network and subnet, and a router to connect to the provider network
+- Juju can be set up to use this OpenStack installation as another cloud, with the steps needing to be performed after the OpenStack deployment.
+- For normal workloads, users should not use Juju's "admin" user. However, it is less hassle to keep the OpenStack deployment under the root user.
 
-There is no need to modify security groups or rules.
+The ideal interaction between Juju, OpenStack, and users can be summarised as follows:
+- The OpenStack cloud is added to the Juju controller
+- Users have accounts on both the Juju controller and OpenStack
+- Users login to and interact with the Juju controller from their `juju` command line client, whether remotely (e.g. laptop), locally, or both
+- Users add the cloud to their client, and add credentials for their accounts on the OpenStack cloud to use Juju in their own project
 
-Then copy and modify `juju_template.yaml` as required, and create the new cloud and credential:
+The following sections will run through the full setup process as per my requirements; refer to the [Juju documentation](https://juju.is/docs) as a definitive resource.
+
+### OpenStack setup
+Juju can only use the primary OpenStack project for a user. If a separate project is desired:
+- Create a new project
+- Create a dedicated Juju user with the new project as its default
+- Add your normal user to the project as an Admin/Member as required for easier management outside of Juju
+
+The following changes will need to be made to the project:
+- Project quotas will need to be set
+- A network named "juju-default" (or another arbitrary name), a subnet within and a router to connect this to the provider network will need to be created
+
+Juju will automatically create SSH keys and manage security groups and rules.
+
+### Creating juju.yaml
+Copy [juju_template.yaml](juju_template.yaml) and modify it as required. This file will be used to configure both the controller and the client. It is presumed this will be located at /tmp/juju.yaml.
+
+### Add the OpenStack cloud to the controller
+Run the following command:
 ```
-$ juju add-cloud --controller "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')" --client openstack /tmp/juju.yaml
-$ juju add-credential --controller "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')" --client -f /tmp/juju.yaml openstack
+$ juju add-cloud --controller "$(hostname -s)" openstack /tmp/juju.yaml
+```
+The `credentials` section will be ignored; ignore the warning.
+
+Set defaults for OpenStack models:
+```
+$ juju model-defaults openstack network=juju-default use-floating-ip=true  # Replace with network created previously
+```
+These can be overridden on a per-model basis. Note `network=juju-default`, the arbitrary network created in the [OpenStack setup](#openstack-setup) step. Floating IPs are required to SSH into instances.
+
+### Create a user account on the Juju controller and logging in
+Create your user and grant access to the OpenStack cloud:
+```
+$ juju add-user jamesvaughn
+$ juju grant-cloud jamesvaughn add-model openstack
 ```
 
-Finally, set the default region and model defaults:
+`juju add-user` will generate a `juju register` command to setup your client. Copy this command and run it on your client:
+```
+~ % juju register <HASH>
+Since Juju 2 is being run for the first time, downloading latest cloud information.
+Fetching latest public cloud list...
+This client's list of public clouds is up to date, see `juju clouds --client-only`.
+Enter a new password:
+Confirm password:
+Enter a name for this controller [jvaughnserver]:
+Initial password successfully set for jamesvaughn.
+
+Welcome, jamesvaughn. You are now logged into "jvaughnserver".
+
+There are no models available. You can add models with
+"juju add-model", or you can ask an administrator or owner
+of a model to grant access to that model with "juju grant".
+```
+
+### Add the OpenStack cloud to the client
+Copy /tmp/juju.yaml to the client machine, and run:
+```
+$ juju add-cloud --client openstack /tmp/juju.yaml
+$ juju add-credential --controller jvaughnserver --client -f /tmp/juju.yaml openstack
+```
+
+Then set the default region for convenience:
 ```
 $ juju default-region openstack RegionOne
-$ juju model-defaults openstack network=default use-floating-ip=true  # Replace with network created previously
+```
+
+### Change Juju "admin" user password and logout
+For security and safety purposes—again, largely to prevent accidental modification to the OpenStack cloud—it is best to log out of the "admin" account on the server. However, to do this, the password must be changed. On the server, run:
+```
+$ juju change-user-password
+```
+
+Then log out:
+```
+$ juju logout
 ```

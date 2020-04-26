@@ -2,16 +2,15 @@ clouds:
   openstack:
     type: openstack
     auth-types: [userpass]
-    endpoint: http://10.188.0.7:5000/v3  # keystone/0 unit IP address
+    endpoint: http://1.2.3.4:5000/v3  # Keystone IP address
     regions:
       RegionOne:
-        endpoint: http://10.188.0.7:5000/v3  # keystone/0 unit IP address
+        endpoint: http://1.2.3.4:5000/v3  # Keystone IP address
 credentials:
   openstack:
-    default-region: RegionOne
-    juju:  # Only the credential name in Juju, not OpenStack username
+    juju:  # Only the credential name in Juju, but matching the OpenStack username is sensible
       auth-type: userpass
-      password:  changeme  # OpenStack password
+      password: changeme  # OpenStack password
       project-domain-name: user_domain  # Change as appropriate
       user-domain-name: user_domain  # Change as appropriate
       username: juju  # OpenStack username

@@ -35,7 +35,7 @@ sudo update-grub
 sudo apt-get update && sudo apt-get -y install ${packages[@]}
 sudo snap install canonical-livepatch
 sudo snap install juju --classic --edge
-sudo snap refresh lxd --channel=4.0/stable
+sudo snap refresh lxd --channel=4.0/stable | sudo snap install lxd --channel=4.0/stable
 
 # OpenSSH server: Set 'PasswordAuthentication no' in
 # /etc/ssh/sshd_config.d/PasswordAuthentication.conf. The installer adds this to
@@ -80,7 +80,7 @@ lxd init --auto --network-address 0.0.0.0 --network-port 8443 --storage-backend 
 lxc network set lxdbr0 ipv4.address=10.188.0.1/16 ipv4.dhcp.ranges=10.188.0.2-10.188.0.254 ipv6.address=none
 
 # Bootstrap Juju controller
-juju bootstrap --config apt-http-proxy=http://10.188.0.1:8000 localhost "$(hostnamectl | awk '/Static hostname:/ { for (i = 3; i <= NR; i++); print $i }')"
+juju bootstrap --config apt-http-proxy=http://10.188.0.1:8000 localhost "$(hostname -s)"
 
 sudo systemctl enable --now {docker,znc}.service
 
