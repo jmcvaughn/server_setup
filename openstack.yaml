@@ -66,6 +66,8 @@ applications:
     options:
       openstack-origin: cloud:bionic-train
       network-manager: Neutron
+      console-access-protocol: spice
+      console-keymap: en-gb
       worker-multiplier: 0.1
       ram-allocation-ratio: 4
   nova-compute:
