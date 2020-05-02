@@ -74,6 +74,7 @@ applications:
     options:
       enable-resize: True
       openstack-origin: cloud:bionic-train
+      resume-guests-state-on-host-boot: True
   openstack-dashboard:
     charm: cs:openstack-dashboard
     num_units: 1
