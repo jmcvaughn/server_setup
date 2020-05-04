@@ -9,6 +9,7 @@ packages=(
 	ipmitool
 	jq
 	neovim
+	nfs-kernel-server
 	python3-openstackclient
 	smartmontools
 	source-highlight
